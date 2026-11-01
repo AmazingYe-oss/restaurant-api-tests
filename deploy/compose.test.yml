@@ -1,0 +1,16 @@
+name: restaurant-practice
+services:
+  api:
+    restart: unless-stopped
+    environment:
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+    build:
+      dockerfile: ../../restaurant-api-tests/deploy/Dockerfile
+    ports: !override
+      - "127.0.0.1:18080:8080"
+  mysql:
+    restart: unless-stopped
+    ports: !reset []
+  redis:
+    restart: unless-stopped
+    ports: !reset []
