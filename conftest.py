@@ -35,3 +35,21 @@ def base_url():
         "TEST_BASE_URL",
         "http://127.0.0.1:18080",
     ).rstrip("/")
+
+
+@pytest.fixture
+def reservation_ids(base_url, login_data):
+    ids = []
+    headers = {
+        "Authorization": f"Bearer {login_data['accessToken']}"
+    }
+
+    yield ids
+
+    for reservation_id in ids:
+        url = f"{base_url}/api/reservations/{reservation_id}"
+        response=requests.get(url=url,timeout=10,headers=headers)
+        assert response.status_code==200
+        if response.json()['status'] in ('PENDING','CONFIRMED'):
+            response_delete=requests.delete(url=url, timeout=10, headers=headers)
+            assert response_delete.status_code==204
