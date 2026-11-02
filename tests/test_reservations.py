@@ -1,3 +1,5 @@
+from reservation_data import build_reservation_payload
+from reservation_api import create_reservation, get_reservation, cancel_reservation
 import os
 from datetime import date, timedelta
 import requests
@@ -153,8 +155,27 @@ def test_same_key_with_different_payload_returns_409(
             reservation_ids.append(second_id)
     assert response_2.status_code == 409, response_2.text
     assert 'Idempotency-Key was already used for a different reservation request' in response_2.json()['message']
-    
-    
 
-    
 
+
+
+
+def test_customer_cannot_cancel_another_reservation(base_url, login_data, register_user, reservation_ids):
+    customer_id = login_data["customerId"]
+    assert register_user["role"] == "CUSTOMER"
+    assert register_user["customerId"] != customer_id
+    token_a = login_data["accessToken"]
+    token_b = register_user["accessToken"]
+    payload = build_reservation_payload(customer_id)
+    created = create_reservation(base_url, token_a, payload, uuid4().hex)
+    assert created.status_code == 201, created.text
+    reservation_id = created.json()["id"]
+    reservation_ids.append(reservation_id)
+    cancelled = cancel_reservation(base_url, token_b, reservation_id)
+    assert cancelled.status_code == 403, cancelled.text
+    queried = get_reservation(base_url, token_a, reservation_id)
+    assert queried.status_code == 200, queried.text
+    data = queried.json()
+    assert data["id"] == reservation_id
+    assert data["customerId"] == customer_id
+    assert data["status"] == "PENDING"

@@ -26,3 +26,21 @@ def test_get_customer_without_token_returns_401(base_url):
     assert response.status_code==401
     assert response.json()['path']=='/api/customers/2'
     assert 'Authentication required' in response.json()['message']
+
+
+
+def test_customer_cannot_get_another_profile(base_url, login_data,register_user):
+    customer_id=login_data['customerId']
+    customer_new_id=register_user['customerId']
+    assert register_user["role"] == "CUSTOMER"
+    assert customer_new_id != customer_id
+    access_new_token=register_user['accessToken']
+    response = requests.get(
+            f"{base_url}/api/customers/{customer_id}",
+            headers={"Authorization": f"Bearer {access_new_token}"},
+            timeout=10,
+        )
+
+
+    assert response.status_code==403
+    assert response.json()['path']==f"/api/customers/{customer_id}"
