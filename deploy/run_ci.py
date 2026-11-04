@@ -56,7 +56,17 @@ def main():
             compose.extend(["-f", str(override)])
         try:
             if not args.reuse_image:
-                subprocess.run(compose + ["build", "api"], env=env, check=True)
+                build = compose + ["build"]
+                proxy_host = os.getenv("BUILD_PROXY_HOST")
+                if proxy_host:
+                    proxy_port = os.getenv("BUILD_PROXY_PORT", "7890")
+                    proxy_url = f"http://{proxy_host}:{proxy_port}"
+                    for arg in (
+                        f"MAVEN_PROXY_HOST={proxy_host}", f"MAVEN_PROXY_PORT={proxy_port}",
+                        f"HTTP_PROXY={proxy_url}", f"HTTPS_PROXY={proxy_url}",
+                    ):
+                        build.extend(["--build-arg", arg])
+                subprocess.run(build + ["api"], env=env, check=True)
             subprocess.run(compose + ["up", "-d", "--no-build", "--wait", "--wait-timeout", "180"],
                            env=env, check=True)
             registered = requests.post(
