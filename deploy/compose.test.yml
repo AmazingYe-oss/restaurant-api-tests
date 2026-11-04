@@ -7,7 +7,7 @@ services:
     build:
       dockerfile: ../../restaurant-api-tests/deploy/Dockerfile
     ports: !override
-      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:${PRACTICE_API_PORT:-18080}:8080"
   mysql:
     restart: unless-stopped
     ports: !reset []

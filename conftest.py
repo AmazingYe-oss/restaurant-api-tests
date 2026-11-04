@@ -59,7 +59,8 @@ def login_data(login_user):
 def admin_login_data(base_url):
     from dotenv import dotenv_values
 
-    config = dotenv_values(Path(__file__).resolve().parent / "deploy" / ".env")
+    config_path = os.getenv("TEST_DEPLOY_ENV_FILE", str(Path(__file__).resolve().parent / "deploy" / ".env"))
+    config = dotenv_values(config_path)
     response = requests.post(
         f"{base_url}/api/auth/login",
         json={"email": config["APP_ADMIN_EMAIL"], "password": config["APP_ADMIN_PASSWORD"]},

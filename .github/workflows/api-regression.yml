@@ -1,0 +1,49 @@
+name: API regression
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: restaurant-api-tests
+    steps:
+      - name: Check out tests
+        uses: actions/checkout@v6
+        with:
+          path: restaurant-api-tests
+          persist-credentials: false
+      - name: Check out pinned system under test
+        uses: actions/checkout@v6
+        with:
+          repository: Peggeyyy/restaurant-reservation-platform
+          ref: e0ebb51b3c53118bf73e4cd044372edc5eb01c95
+          path: restaurant-reservation-sut
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: restaurant-api-tests/requirements.txt
+      - name: Install test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Build service and run stable regression
+        run: python deploy/run_ci.py
+      - name: Upload JUnit report and test scope
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-regression-results
+          path: |
+            restaurant-api-tests/evidence/ci-junit.xml
+            restaurant-api-tests/evidence/ci-scope.txt
+          if-no-files-found: warn

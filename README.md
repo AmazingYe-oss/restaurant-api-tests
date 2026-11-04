@@ -59,3 +59,9 @@ Swagger：<http://localhost:18080/swagger-ui.html>。`deploy/prepare_data.py` �
 注册测试使用动态邮箱，会保留测试用户；预约取消改变状态，不物理删除记录。当前失败清理不涵盖创建结果未知、无法获取编号等所有网络异常。固定不存在编号999的前提也可能随数据变化。请仅在独立测试环境执行，不清空其他项目的数据卷。
 
 自动生成的 evidence/、虚拟环境、缓存和私有凭据不提交。教学计划、进度和Agent交接文档仅在本机维护。
+
+## 持续集成
+
+`.github/workflows/api-regression.yml` 固定被测源码版本，在 Ubuntu runner 安装 Python 依赖，再调用 `deploy/run_ci.py`。脚本通过端口 28080 启动独立 Compose 项目，自动生成临时凭据、准备测试数据、执行回归并清理临时资源。首次运行需能够拉取基础镜像和下载构建依赖。
+
+本地可在准备好相邻被测源码目录、Python 环境及 Docker Compose 后运行 `python deploy/run_ci.py`。稳定回归显式排除 BUG-001 对应并发用例。流水线归档 JUnit XML 与范围说明，保留报告供检查。

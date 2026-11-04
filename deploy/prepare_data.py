@@ -1,11 +1,12 @@
 """Prepare reusable restaurant/table data; no reservations are created."""
 import json
+import os
 from pathlib import Path
 import requests
 from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = "http://127.0.0.1:18080"
+BASE = os.getenv("TEST_BASE_URL", "http://127.0.0.1:18080").rstrip("/")
 
 def request(method, path, expected=200, **kwargs):
     response = requests.request(method, BASE + path, timeout=15, **kwargs)
@@ -14,7 +15,7 @@ def request(method, path, expected=200, **kwargs):
     return response.json()
 
 def main():
-    config = dotenv_values(ROOT / "deploy/.env")
+    config = dotenv_values(os.getenv("TEST_DEPLOY_ENV_FILE", str(ROOT / "deploy/.env")))
     login = request("POST", "/api/auth/login", json={
         "email": config["APP_ADMIN_EMAIL"],
         "password": config["APP_ADMIN_PASSWORD"],
