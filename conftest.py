@@ -53,3 +53,19 @@ def reservation_ids(base_url, login_data):
 @pytest.fixture
 def login_data(login_user):
     return login_user()
+
+
+@pytest.fixture
+def admin_login_data(base_url):
+    from dotenv import dotenv_values
+
+    config = dotenv_values(Path(__file__).resolve().parent / "deploy" / ".env")
+    response = requests.post(
+        f"{base_url}/api/auth/login",
+        json={"email": config["APP_ADMIN_EMAIL"], "password": config["APP_ADMIN_PASSWORD"]},
+        timeout=10,
+    )
+    assert response.status_code == 200, f"Admin login HTTP {response.status_code}"
+    data = response.json()
+    assert data["role"] == "ADMIN"
+    return data
