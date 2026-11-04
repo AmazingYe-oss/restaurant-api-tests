@@ -44,7 +44,7 @@ def main():
     evidence = {"restaurantId": rid, "restaurantName": name,
         "openingTime": restaurant["openingTime"], "closingTime": restaurant["closingTime"],
         "tableId": table["id"], "tableNumber": table["tableNumber"], "capacity": table["capacity"],
-        "preparedBy": "AI via administrator API; not a learner-authored test"}
+        "preparationMethod": "administrator API"}
     (ROOT / "evidence").mkdir(exist_ok=True)
     (ROOT / "evidence/reservation-data.json").write_text(json.dumps(evidence, indent=2) + "\n")
     print(json.dumps(evidence))
